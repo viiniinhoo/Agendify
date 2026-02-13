@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 // Added Event to imports
 import { PageView, EventStatus, Event } from '../types';
 import { ChevronLeft, ChevronRight, Clock, MapPin } from 'lucide-react';
+import { formatDateFull } from '../utils/dateUtils';
 
 interface CalendarPageProps {
   onNavigate: (view: PageView, id?: string) => void;
@@ -109,7 +110,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onNavigate, events }) => {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-lg">Eventos do dia</h3>
-            <span className="text-secondary text-sm">{new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR')}</span>
+            <span className="text-secondary text-sm">{formatDateFull(selectedDate)}</span>
           </div>
 
           <div className="space-y-4">

@@ -4,6 +4,7 @@ import { PageView, Event, EventStatus } from '../types';
 import { Plus, Clock, MapPin, DollarSign, Users, Briefcase, Calendar } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { motion } from 'framer-motion';
+import { getDayAndMonth } from '../utils/dateUtils';
 
 interface DashboardProps {
   onNavigate: (view: PageView, id?: string) => void;
@@ -36,7 +37,7 @@ const itemVariants = {
 const Dashboard: React.FC<DashboardProps> = ({ onNavigate, events, onAddEvent }) => {
   const nextEvents = events
     .filter(e => e.status !== EventStatus.CONCLUIDO && e.status !== EventStatus.CANCELADO)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 5);
 
   const totalRevenue = events.reduce((acc, curr) => acc + curr.total_amount, 0);
@@ -117,9 +118,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, events, onAddEvent })
                 <div className="flex items-center gap-5 min-w-0 flex-1">
                   <div className="w-12 h-12 rounded-2xl bg-white/5 border border-gray-800/50 flex flex-col items-center justify-center shrink-0 group-hover:border-accent/30 transition-colors">
                     <span className="text-[10px] font-black text-secondary uppercase leading-none mb-1">
-                      {new Date(event.date).toLocaleString('pt-BR', { month: 'short' }).replace('.', '')}
+                      {getDayAndMonth(event.date).month}
                     </span>
-                    <span className="text-xl font-black leading-none">{new Date(event.date).getDate() + 1}</span>
+                    <span className="text-xl font-black leading-none">{getDayAndMonth(event.date).day}</span>
                   </div>
                   <div className="min-w-0">
                     <h3 className="font-bold text-base group-hover:text-accent transition-colors truncate mb-1">{event.title}</h3>

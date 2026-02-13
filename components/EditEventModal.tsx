@@ -176,6 +176,17 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, onClose, onSave 
                         />
                     </div>
 
+                    {/* Observações */}
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase text-secondary tracking-widest px-1">Observações (Opcional)</label>
+                        <textarea
+                            placeholder="Adicione detalhes importantes sobre o evento..."
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 focus:outline-none focus:border-accent/50 transition-all text-sm resize-none h-24"
+                            value={formData.notes}
+                            onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                        />
+                    </div>
+
                     <button
                         type="submit"
                         className="w-full bg-accent hover:bg-accent-dark text-black font-black py-5 rounded-2xl transition-all shadow-xl shadow-accent/20 active:scale-[0.98] mt-6 flex items-center justify-center gap-3 text-sm uppercase tracking-widest"

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { PageView, Event, EventStatus } from '../types';
 import { Plus, Search, Calendar, MapPin, Clock, ExternalLink, Briefcase } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatDateFull } from '../utils/dateUtils';
 
 interface EventsPageProps {
   onNavigate: (view: PageView, id?: string) => void;
@@ -72,8 +73,8 @@ const EventsPage: React.FC<EventsPageProps> = ({ onNavigate, events, onAddEvent 
                 key={s.id}
                 onClick={() => setFilter(s.id)}
                 className={`relative px-4 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${filter === s.id
-                    ? 'bg-accent text-black shadow-lg shadow-accent/20'
-                    : 'text-secondary hover:text-white'
+                  ? 'bg-accent text-black shadow-lg shadow-accent/20'
+                  : 'text-secondary hover:text-white'
                   }`}
               >
                 {s.label}
@@ -86,8 +87,8 @@ const EventsPage: React.FC<EventsPageProps> = ({ onNavigate, events, onAddEvent 
                 key={s.id}
                 onClick={() => setFilter(s.id)}
                 className={`relative px-4 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${filter === s.id
-                    ? 'bg-accent text-black shadow-lg shadow-accent/20'
-                    : 'text-secondary hover:text-white'
+                  ? 'bg-accent text-black shadow-lg shadow-accent/20'
+                  : 'text-secondary hover:text-white'
                   }`}
               >
                 {s.label}
@@ -130,7 +131,7 @@ const EventsPage: React.FC<EventsPageProps> = ({ onNavigate, events, onAddEvent 
                   <div className="bg-accent/10 p-2 rounded-lg text-accent">
                     <Calendar size={14} />
                   </div>
-                  <span>{new Date(event.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+                  <span>{formatDateFull(event.date)}</span>
                 </div>
                 <div className="flex items-center gap-3 text-secondary text-sm font-medium">
                   <div className="bg-accent/10 p-2 rounded-lg text-accent">

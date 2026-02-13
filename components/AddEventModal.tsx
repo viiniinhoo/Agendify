@@ -168,6 +168,16 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ onClose, onSave, isAdding
                 />
               </div>
             </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-secondary tracking-widest px-1">Observações (Opcional)</label>
+              <textarea
+                placeholder="Adicione detalhes importantes sobre o evento..."
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 focus:outline-none focus:border-accent/50 transition-all text-sm resize-none h-24"
+                value={formData.notes}
+                onChange={e => setFormData({ ...formData, notes: e.target.value })}
+              />
+            </div>
           </div>
 
           <button

@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useEvents } from '../hooks/useEvents';
 import { useChecklist } from '../hooks/useChecklist';
 import { EventStatus, Event } from '../types';
-import { ChevronLeft, Calendar, MapPin, Clock, User, Phone, DollarSign, CheckCircle2, MoreVertical, MessageSquare, Plus, Trash2, Loader2, LayoutTemplate } from 'lucide-react';
+import { ChevronLeft, Calendar, MapPin, Clock, User, Phone, DollarSign, CheckCircle2, MoreVertical, MessageSquare, Plus, Trash2, Loader2, LayoutTemplate, FileText } from 'lucide-react';
+import { formatDate } from '../utils/dateUtils';
 import EditEventModal from '../components/EditEventModal';
 import CustomTemplateSelect from '../components/CustomTemplateSelect';
 import { useTemplates } from '../hooks/useTemplates';
@@ -181,7 +182,7 @@ const EventDetailPage: React.FC<EventDetailProps> = ({ eventId, events, onBack }
                 <div className="bg-accent/10 text-accent p-2.5 rounded-xl"><Calendar size={20} /></div>
                 <div>
                   <p className="text-[10px] font-bold text-secondary uppercase tracking-widest">Data</p>
-                  <p className="font-bold">{new Date(event.date).toLocaleDateString('pt-BR')}</p>
+                  <p className="font-bold">{formatDate(event.date)}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -307,6 +308,18 @@ const EventDetailPage: React.FC<EventDetailProps> = ({ eventId, events, onBack }
               </div>
             </div>
           </div>
+
+          {event.notes && (
+            <div className="bg-card p-6 rounded-3xl border border-gray-800 space-y-4">
+              <h3 className="font-bold text-lg flex items-center gap-3">
+                <FileText size={20} className="text-secondary" />
+                Observações
+              </h3>
+              <p className="text-sm text-secondary leading-relaxed whitespace-pre-wrap">
+                {event.notes}
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="lg:col-span-4 space-y-6">
