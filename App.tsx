@@ -92,7 +92,7 @@ const App: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-background">
         <div className="w-full max-w-md p-8 bg-card rounded-2xl border border-gray-800 shadow-2xl">
-          <h1 className="text-3xl font-bold text-accent mb-6 text-center tracking-tighter">FocusFlow</h1>
+          <h1 className="text-3xl font-bold text-accent mb-6 text-center tracking-tighter">Agendify</h1>
           <div className="space-y-4">
             {authError && <p className="text-destructive text-sm text-center bg-destructive/10 py-2 rounded-lg">{authError}</p>}
             <div className="space-y-1">

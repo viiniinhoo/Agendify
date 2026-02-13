@@ -1,7 +1,6 @@
+# Agendify - Gerenciamento para Freelancers de Eventos
 
-# FocusFlow - Gestão para Freelancers de Eventos
-
-FocusFlow é uma plataforma responsiva (PWA) projetada para fotógrafos, DJs, cerimonialistas e outros profissionais de eventos organizarem seus eventos, checklists e financeiro de forma centralizada e profissional.
+Agendify é uma plataforma responsiva (PWA) projetada para fotógrafos, DJs, cerimonialistas e outros profissionais de eventos organizarem seus eventos, checklists e financeiro de forma centralizada e profissional.
 
 ## 🚀 Tecnologias
 

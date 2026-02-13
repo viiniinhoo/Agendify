@@ -28,7 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, onLogout }) 
           animate={{ opacity: 1, x: 0 }}
           className="text-3xl font-black text-accent tracking-tighter"
         >
-          FocusFlow
+          Agendify
         </motion.h1>
       </div>
 

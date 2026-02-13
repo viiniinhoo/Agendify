@@ -23,8 +23,8 @@ const SettingsPage: React.FC<{ onNavigate: (v: PageView) => void; onLogout: () =
           {user?.email?.charAt(0).toUpperCase() || 'F'}
         </div>
         <div>
-          <h2 className="text-xl font-black tracking-tight">{user?.email?.split('@')[0] || 'FocusFlow User'}</h2>
-          <p className="text-secondary text-sm font-medium opacity-70">{user?.email || 'premium@focusflow.com'}</p>
+          <h2 className="text-xl font-black tracking-tight">{user?.email?.split('@')[0] || 'Usuário Agendify'}</h2>
+          <p className="text-secondary text-sm font-medium opacity-70">{user?.email || 'premium@agendify.com'}</p>
           <div className="flex gap-4 mt-2">
             <span className="bg-accent/10 text-accent text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded">Pro Plan</span>
             <button className="text-accent text-[9px] font-black uppercase tracking-widest hover:underline">Editar Perfil</button>
@@ -59,7 +59,7 @@ const SettingsPage: React.FC<{ onNavigate: (v: PageView) => void; onLogout: () =
           Encerrar Sessão
         </button>
         <div className="text-center space-y-1">
-          <p className="text-secondary text-[10px] font-black uppercase tracking-widest opacity-40">FocusFlow v1.0.0 (Beta)</p>
+          <p className="text-secondary text-[10px] font-black uppercase tracking-widest opacity-40">Agendify v1.0.0 (Beta)</p>
           <p className="text-secondary text-[9px] font-medium opacity-30">Feito com ❤️ por freelancers para freelancers</p>
         </div>
       </div>
