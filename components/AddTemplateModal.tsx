@@ -5,12 +5,13 @@ import { X, LayoutTemplate, Plus, Trash2, CheckCircle2 } from 'lucide-react';
 interface AddTemplateModalProps {
     onClose: () => void;
     onSave: (template: { name: string; description: string; items: string[] }) => void;
+    initialData?: { name: string; description: string; items: string[] };
 }
 
-const AddTemplateModal: React.FC<AddTemplateModalProps> = ({ onClose, onSave }) => {
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
-    const [items, setItems] = useState<string[]>(['']);
+const AddTemplateModal: React.FC<AddTemplateModalProps> = ({ onClose, onSave, initialData }) => {
+    const [name, setName] = useState(initialData?.name || '');
+    const [description, setDescription] = useState(initialData?.description || '');
+    const [items, setItems] = useState<string[]>(initialData?.items || ['']);
 
     const handleAddItem = () => setItems([...items, '']);
     const handleRemoveItem = (index: number) => {
@@ -43,7 +44,7 @@ const AddTemplateModal: React.FC<AddTemplateModalProps> = ({ onClose, onSave }) 
                         <div className="bg-accent/10 p-2 rounded-xl text-accent">
                             <LayoutTemplate size={24} strokeWidth={3} />
                         </div>
-                        Novo Template
+                        {initialData ? 'Editar Template' : 'Novo Template'}
                     </h2>
                     <button onClick={onClose} className="text-secondary hover:text-white transition-colors bg-white/5 p-2 rounded-xl">
                         <X size={24} />
@@ -115,7 +116,7 @@ const AddTemplateModal: React.FC<AddTemplateModalProps> = ({ onClose, onSave }) 
                         className="w-full bg-accent hover:bg-accent-dark text-black font-black py-4 rounded-2xl transition-all shadow-lg shadow-accent/20 active:scale-[0.98] mt-4 flex items-center justify-center gap-2"
                     >
                         <CheckCircle2 size={20} strokeWidth={3} />
-                        Criar Template
+                        {initialData ? 'Salvar Alterações' : 'Criar Template'}
                     </button>
                 </form>
             </div>

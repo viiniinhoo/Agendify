@@ -7,9 +7,10 @@ interface CustomDatePickerProps {
     value: string; // YYYY-MM-DD
     onChange: (value: string) => void;
     onClose: () => void;
+    statusColor?: string;
 }
 
-const CustomDatePicker: React.FC<CustomDatePickerProps> = ({ value, onChange, onClose }) => {
+const CustomDatePicker: React.FC<CustomDatePickerProps> = ({ value, onChange, onClose, statusColor = 'text-accent' }) => {
     const [currentDate, setCurrentDate] = useState(value ? new Date(value + 'T12:00:00') : new Date());
 
     const daysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
@@ -60,6 +61,23 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({ value, onChange, on
         return y === currentDate.getFullYear() && m === currentDate.getMonth() + 1 && d === day;
     };
 
+    const getBgColor = () => {
+        if (statusColor.includes('warning')) return 'bg-warning';
+        if (statusColor.includes('blue')) return 'bg-blue-500';
+        if (statusColor.includes('destructive') || statusColor.includes('red')) return 'bg-destructive';
+        return 'bg-accent';
+    };
+
+    const getTextColor = () => {
+        if (statusColor.includes('warning')) return 'text-warning';
+        if (statusColor.includes('blue')) return 'text-blue-500';
+        if (statusColor.includes('destructive') || statusColor.includes('red')) return 'text-destructive';
+        return 'text-accent';
+    };
+
+    const activeBg = getBgColor();
+    const activeText = getTextColor();
+
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <motion.div
@@ -69,7 +87,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({ value, onChange, on
                 className="bg-card border border-gray-800 rounded-3xl w-full max-w-[340px] overflow-hidden shadow-2xl"
             >
                 <div className="p-4 border-b border-white/5 flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-accent font-black uppercase text-[10px] tracking-widest">
+                    <div className={`flex items-center gap-2 font-black uppercase text-[10px] tracking-widest ${activeText}`}>
                         <CalendarIcon size={14} />
                         Selecionar Data
                     </div>
@@ -106,8 +124,8 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({ value, onChange, on
                                     <button
                                         onClick={() => handleSelectDay(day)}
                                         className={`w-full h-full rounded-xl text-xs font-bold transition-all flex items-center justify-center
-                      ${isSelected(day) ? 'bg-accent text-black shadow-lg shadow-accent/20 scale-110' :
-                                                isToday(day) ? 'bg-white/10 text-accent border border-accent/20' :
+                      ${isSelected(day) ? `${activeBg} text-white shadow-lg shadow-current/20 scale-110` :
+                                                isToday(day) ? `bg-white/10 ${activeText} border border-white/10` :
                                                     'text-secondary hover:bg-white/5 hover:text-white'}
                     `}
                                     >

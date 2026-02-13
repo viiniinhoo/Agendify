@@ -77,12 +77,53 @@ export const useTemplates = () => {
         },
     });
 
+    const updateTemplateMutation = useMutation({
+        mutationFn: async ({ id, name, description, items, user_id }: any) => {
+            // 1. Update template details
+            const { error: tError } = await supabase
+                .from('checklist_templates')
+                .update({ name, description })
+                .eq('id', id);
+
+            if (tError) throw tError;
+
+            // 2. Sync items (Delete all and re-create)
+            const { error: dError } = await supabase
+                .from('checklist_template_items')
+                .delete()
+                .eq('template_id', id);
+
+            if (dError) throw dError;
+
+            // 3. Insert new items
+            if (items && items.length > 0) {
+                const itemPayload = items.map((desc: string, idx: number) => ({
+                    template_id: id,
+                    user_id,
+                    description: desc,
+                    order: idx
+                }));
+
+                const { error: iError } = await supabase
+                    .from('checklist_template_items')
+                    .insert(itemPayload);
+
+                if (iError) throw iError;
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['templates'] });
+        },
+    });
+
     return {
         templates,
         isLoading,
         error,
         addTemplate: addTemplateMutation.mutateAsync,
+        updateTemplate: updateTemplateMutation.mutateAsync,
         deleteTemplate: deleteTemplateMutation.mutateAsync,
-        isAdding: addTemplateMutation.isPending
+        isAdding: addTemplateMutation.isPending,
+        isUpdating: updateTemplateMutation.isPending
     };
 };

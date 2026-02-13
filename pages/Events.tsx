@@ -26,6 +26,7 @@ const EventsPage: React.FC<EventsPageProps> = ({ onNavigate, events, onAddEvent 
     { id: EventStatus.ORCADO, label: 'Orçados' },
     { id: EventStatus.CONFIRMADO, label: 'Confirmados' },
     { id: EventStatus.CONCLUIDO, label: 'Concluídos' },
+    { id: EventStatus.CANCELADO, label: 'Cancelados' },
   ];
 
   return (
@@ -50,8 +51,8 @@ const EventsPage: React.FC<EventsPageProps> = ({ onNavigate, events, onAddEvent 
         </motion.button>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        <div className="relative flex-1 group">
+      <div className="space-y-4">
+        <div className="relative group">
           <label htmlFor="event-search" className="sr-only">Buscar eventos</label>
           <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-secondary group-focus-within:text-accent transition-colors" size={20} />
           <input
@@ -63,19 +64,36 @@ const EventsPage: React.FC<EventsPageProps> = ({ onNavigate, events, onAddEvent 
             className="w-full bg-card/40 border border-white/5 rounded-2xl pl-14 pr-4 py-4 focus:outline-none focus:border-accent/40 focus:ring-4 focus:ring-accent/5 transition-all shadow-xl font-medium"
           />
         </div>
-        <div className="flex overflow-x-auto hide-scrollbar gap-2 pb-2 lg:pb-0 px-1">
-          {statuses.map(s => (
-            <button
-              key={s.id}
-              onClick={() => setFilter(s.id)}
-              className={`whitespace-nowrap px-6 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest border transition-all ${filter === s.id
-                ? 'bg-accent/10 border-accent/30 text-accent shadow-[0_0_15px_rgba(0,255,136,0.1)]'
-                : 'bg-card/40 border-white/5 text-secondary opacity-60'
-                }`}
-            >
-              {s.label}
-            </button>
-          ))}
+
+        <div className="bg-card/40 border border-white/5 rounded-2xl p-1.5 shadow-xl">
+          <div className="grid grid-cols-3 gap-1.5">
+            {statuses.slice(0, 3).map(s => (
+              <button
+                key={s.id}
+                onClick={() => setFilter(s.id)}
+                className={`relative px-4 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${filter === s.id
+                    ? 'bg-accent text-black shadow-lg shadow-accent/20'
+                    : 'text-secondary hover:text-white'
+                  }`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-1.5 mt-1.5">
+            {statuses.slice(3).map(s => (
+              <button
+                key={s.id}
+                onClick={() => setFilter(s.id)}
+                className={`relative px-4 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${filter === s.id
+                    ? 'bg-accent text-black shadow-lg shadow-accent/20'
+                    : 'text-secondary hover:text-white'
+                  }`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -97,7 +115,7 @@ const EventsPage: React.FC<EventsPageProps> = ({ onNavigate, events, onAddEvent 
                   event.status === EventStatus.ORCADO ? 'bg-warning/10 text-warning border border-warning/20' :
                     'bg-blue-400/10 text-blue-400 border border-blue-400/20'
                   }`}>
-                  {event.status}
+                  {event.status === EventStatus.ORCADO ? 'ORÇADO' : event.status}
                 </span>
                 <p className="text-accent font-black text-lg">R$ {event.total_amount.toLocaleString('pt-BR')}</p>
               </div>

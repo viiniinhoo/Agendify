@@ -6,6 +6,7 @@ import { useChecklist } from '../hooks/useChecklist';
 import { EventStatus, Event } from '../types';
 import { ChevronLeft, Calendar, MapPin, Clock, User, Phone, DollarSign, CheckCircle2, MoreVertical, MessageSquare, Plus, Trash2, Loader2, LayoutTemplate } from 'lucide-react';
 import EditEventModal from '../components/EditEventModal';
+import CustomTemplateSelect from '../components/CustomTemplateSelect';
 import { useTemplates } from '../hooks/useTemplates';
 import { useNotifications } from '../components/NotificationProvider';
 
@@ -151,18 +152,29 @@ const EventDetailPage: React.FC<EventDetailProps> = ({ eventId, events, onBack }
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8 space-y-6">
-          <div className="bg-card p-6 rounded-3xl border border-gray-800 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-6">
-              <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${event.status === EventStatus.CONFIRMADO ? 'bg-accent/10 text-accent border-accent/20' :
-                event.status === EventStatus.CONCLUIDO ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
-                  'bg-warning/10 text-warning border-warning/20'
-                }`}>
-                {event.status}
-              </span>
-            </div>
+          <div className="bg-card p-6 md:p-8 rounded-3xl border border-gray-800 relative overflow-hidden group">
+            <div className="flex flex-col-reverse md:flex-row md:items-start justify-between gap-6 mb-8">
+              <div className="space-y-3 flex-1 min-w-0">
+                <h1 className="text-3xl md:text-5xl font-black tracking-tighter leading-tight break-words text-white">{event.title}</h1>
+                <span className="bg-white/5 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider text-white/70">{event.type || 'Evento'}</span>
 
-            <h1 className="text-3xl font-black tracking-tighter mb-2">{event.title}</h1>
-            <p className="text-secondary mb-6">{event.type || 'Evento'} — ID #{event.id.slice(0, 5)}</p>
+              </div>
+
+              <div className="shrink-0 self-start">
+                <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border flex items-center gap-2 shadow-lg ${event.status === EventStatus.CONFIRMADO ? 'bg-accent/10 text-accent border-accent/20 shadow-accent/5' :
+                  event.status === EventStatus.CONCLUIDO ? 'bg-blue-500/10 text-blue-500 border-blue-500/20 shadow-blue-500/5' :
+                    event.status === EventStatus.CANCELADO ? 'bg-destructive/10 text-destructive border-destructive/20 shadow-destructive/5' :
+                      'bg-warning/10 text-warning border-warning/20 shadow-warning/5'
+                  }`}>
+                  <div className={`w-1.5 h-1.5 rounded-full ${event.status === EventStatus.CONFIRMADO ? 'bg-accent' :
+                    event.status === EventStatus.CONCLUIDO ? 'bg-blue-500' :
+                      event.status === EventStatus.CANCELADO ? 'bg-destructive' :
+                        'bg-warning'
+                    }`} />
+                  {event.status === EventStatus.ORCADO ? 'ORÇADO' : event.status}
+                </span>
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-6 border-t border-gray-800/50">
               <div className="flex items-center gap-3">
@@ -225,7 +237,7 @@ const EventDetailPage: React.FC<EventDetailProps> = ({ eventId, events, onBack }
                     <p className="font-bold text-sm">R$ {event.paid_amount.toLocaleString('pt-BR')}</p>
                   </div>
                   <div className="text-center p-3 rounded-xl border border-gray-800 bg-warning/5">
-                    <p className="text-[9px] text-warning font-black uppercase tracking-widest">Saldo</p>
+                    <p className="text-[9px] text-warning font-black uppercase tracking-widest">Pendente</p>
                     <p className="font-bold text-sm">R$ {(event.total_amount - event.paid_amount).toLocaleString('pt-BR')}</p>
                   </div>
                 </div>
@@ -307,19 +319,11 @@ const EventDetailPage: React.FC<EventDetailProps> = ({ eventId, events, onBack }
             </div>
 
             <div className="mb-6">
-              <div className="relative">
-                <LayoutTemplate className="absolute left-3 top-1/2 -translate-y-1/2 text-accent/50" size={14} />
-                <select
-                  disabled={isApplyingTemplate}
-                  onChange={(e) => e.target.value && handleApplyTemplate(e.target.value)}
-                  className="w-full bg-white/5 border border-gray-800 rounded-xl pl-10 pr-4 py-2 text-xs font-bold text-secondary focus:outline-none focus:border-accent appearance-none"
-                >
-                  <option value="">{isApplyingTemplate ? 'Aplicando...' : 'Aplicar Modelo'}</option>
-                  {templates.map(t => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
-                  ))}
-                </select>
-              </div>
+              <CustomTemplateSelect
+                templates={templates}
+                onSelect={handleApplyTemplate}
+                isLoading={isApplyingTemplate}
+              />
             </div>
 
             <div className="space-y-3 flex-1">
@@ -383,21 +387,23 @@ const EventDetailPage: React.FC<EventDetailProps> = ({ eventId, events, onBack }
         </div>
       </div>
 
-      {isEditModalOpen && (
-        <EditEventModal
-          event={event}
-          onClose={() => setIsEditModalOpen(false)}
-          onSave={async (updated) => {
-            try {
-              await updateEvent(updated);
-              setIsEditModalOpen(false);
-            } catch (err) {
-              console.error('Erro ao atualizar evento:', err);
-            }
-          }}
-        />
-      )}
-    </div>
+      {
+        isEditModalOpen && (
+          <EditEventModal
+            event={event}
+            onClose={() => setIsEditModalOpen(false)}
+            onSave={async (updated) => {
+              try {
+                await updateEvent(updated);
+                setIsEditModalOpen(false);
+              } catch (err) {
+                console.error('Erro ao atualizar evento:', err);
+              }
+            }}
+          />
+        )
+      }
+    </div >
   );
 };
 

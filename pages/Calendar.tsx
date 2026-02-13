@@ -43,11 +43,20 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onNavigate, events }) => {
     calendarDays.push(i);
   }
 
-  // Use events from props instead of mockEvents
-  const hasEvent = (day: number | null) => {
-    if (!day) return false;
+  // Determine the color of the event dot based on status
+  const getDayStatusClass = (day: number | null) => {
+    if (!day) return null;
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return events.some(e => e.date === dateStr);
+    const dayEvents = events.filter(e => e.date === dateStr);
+
+    if (dayEvents.length === 0) return null;
+
+    if (dayEvents.some(e => e.status === EventStatus.CONFIRMADO)) return 'bg-accent shadow-[0_0_8px_rgba(0,255,136,0.6)]';
+    if (dayEvents.some(e => e.status === EventStatus.CONCLUIDO)) return 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]';
+    if (dayEvents.some(e => e.status === EventStatus.ORCADO)) return 'bg-warning shadow-[0_0_8px_rgba(255,170,0,0.6)]';
+    if (dayEvents.some(e => e.status === EventStatus.CANCELADO)) return 'bg-destructive shadow-[0_0_8px_rgba(255,68,68,0.6)]';
+
+    return 'bg-accent';
   };
 
   return (
@@ -85,8 +94,8 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onNavigate, events }) => {
                   {day && (
                     <>
                       <span className={`text-lg font-medium ${isSelected ? 'text-accent' : 'text-white'}`}>{day}</span>
-                      {hasEvent(day) && (
-                        <div className="absolute bottom-2 w-1.5 h-1.5 bg-accent rounded-full neon-shadow" />
+                      {getDayStatusClass(day) && (
+                        <div className={`absolute bottom-2 w-1.5 h-1.5 rounded-full ${getDayStatusClass(day)}`} />
                       )}
                     </>
                   )}
@@ -100,7 +109,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onNavigate, events }) => {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-lg">Eventos do dia</h3>
-            <span className="text-secondary text-sm">{new Date(selectedDate).toLocaleDateString('pt-BR')}</span>
+            <span className="text-secondary text-sm">{new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR')}</span>
           </div>
 
           <div className="space-y-4">
@@ -116,7 +125,10 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onNavigate, events }) => {
                   <div className="space-y-2 mt-3">
                     <div className="flex items-center gap-2 text-secondary text-sm">
                       <Clock size={14} className="text-accent" />
-                      <span>{event.start_time} - {event.end_time || '??:??'}</span>
+                      <span>
+                        {event.start_time.slice(0, 5)}
+                        {event.end_time ? ` - ${event.end_time.slice(0, 5)}` : ''}
+                      </span>
                     </div>
                     {event.location && (
                       <div className="flex items-center gap-2 text-secondary text-sm">

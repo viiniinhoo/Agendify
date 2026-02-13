@@ -58,7 +58,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, events, onAddEvent })
       <div className="flex flex-row items-center justify-between gap-4">
         <div>
           <motion.h1 variants={itemVariants} className="text-3xl md:text-5xl font-black tracking-tightest">
-            Focus<span className="text-accent underline decoration-accent/30 underline-offset-8">Flow</span>
+            Agend<span className="text-accent underline decoration-accent/30 underline-offset-8">ify</span>
           </motion.h1>
           <motion.p variants={itemVariants} className="hidden sm:block text-secondary text-sm font-medium mt-3">Sua central de comando freelancer.</motion.p>
         </div>
@@ -137,7 +137,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, events, onAddEvent })
                   </div>
                   <div className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border shrink-0 ${event.status === EventStatus.CONFIRMADO ? 'bg-accent/10 text-accent border-accent/20' : 'bg-warning/10 text-warning border-warning/20'
                     }`}>
-                    {event.status}
+                    {event.status === EventStatus.ORCADO ? 'ORÇADO' : event.status}
                   </div>
                 </div>
               </motion.div>

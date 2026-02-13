@@ -3,28 +3,41 @@ import React, { useState } from 'react';
 import { PageView } from '../types';
 import { useTemplates } from '../hooks/useTemplates';
 import { useAuth } from '../hooks/useAuth';
-import { Plus, LayoutTemplate, Trash2, CheckCircle2, Loader2, Search, ChevronLeft } from 'lucide-react';
+import { Plus, LayoutTemplate, Trash2, CheckCircle2, Loader2, Search, ChevronLeft, Edit2, MoreVertical } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AddTemplateModal from '../components/AddTemplateModal';
 
 const TemplatesPage: React.FC<{ onNavigate: (v: PageView) => void }> = ({ onNavigate }) => {
   const { user } = useAuth();
-  const { templates, isLoading, addTemplate, deleteTemplate } = useTemplates();
+  const { templates, isLoading, addTemplate, deleteTemplate, updateTemplate } = useTemplates();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<any>(null);
   const [search, setSearch] = useState('');
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const filteredTemplates = templates.filter(t =>
     t.name.toLowerCase().includes(search.toLowerCase()) ||
     t.description?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleAddTemplate = async (data: any) => {
+  const handleSaveTemplate = async (data: any) => {
     try {
-      await addTemplate({ ...data, user_id: user?.id });
+      if (editingTemplate) {
+        await updateTemplate({ ...data, id: editingTemplate.id, user_id: user?.id });
+      } else {
+        await addTemplate({ ...data, user_id: user?.id });
+      }
       setIsAddModalOpen(false);
+      setEditingTemplate(null);
     } catch (err) {
-      console.error('Erro ao adicionar template:', err);
+      console.error('Erro ao salvar template:', err);
     }
+  };
+
+  const openEditModal = (template: any) => {
+    setEditingTemplate(template);
+    setIsAddModalOpen(true);
+    setOpenMenuId(null);
   };
 
   return (
@@ -50,7 +63,10 @@ const TemplatesPage: React.FC<{ onNavigate: (v: PageView) => void }> = ({ onNavi
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => setIsAddModalOpen(true)}
+          onClick={() => {
+            setEditingTemplate(null);
+            setIsAddModalOpen(true);
+          }}
           className="bg-accent text-black font-black px-6 py-4 rounded-2xl flex items-center justify-center gap-2 w-full md:w-auto transition-all shadow-xl"
         >
           <Plus size={20} strokeWidth={3} />
@@ -93,14 +109,58 @@ const TemplatesPage: React.FC<{ onNavigate: (v: PageView) => void }> = ({ onNavi
                   <div className="p-4 bg-accent/10 rounded-2xl text-accent shadow-inner">
                     <LayoutTemplate size={24} strokeWidth={2.5} />
                   </div>
-                  <button
-                    onClick={() => {
-                      if (confirm('Remover este template permanentemente?')) deleteTemplate(template.id);
-                    }}
-                    className="p-3 rounded-xl bg-destructive/10 text-destructive border border-destructive/20 opacity-0 group-hover:opacity-100 transition-all hover:bg-destructive/20"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                  <div className="relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId(openMenuId === template.id ? null : template.id);
+                      }}
+                      className="p-3 rounded-xl bg-white/5 text-secondary border border-white/10 md:opacity-0 md:group-hover:opacity-100 transition-all hover:bg-white/10 hover:text-white"
+                    >
+                      <MoreVertical size={18} />
+                    </button>
+
+                    <AnimatePresence>
+                      {openMenuId === template.id && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-40"
+                            onClick={() => setOpenMenuId(null)}
+                          />
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                            className="absolute right-0 top-full mt-2 bg-card border border-gray-800 rounded-2xl overflow-hidden shadow-2xl z-50 min-w-[160px]"
+                          >
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openEditModal(template);
+                              }}
+                              className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-blue-500 hover:bg-blue-500/10 transition-all"
+                            >
+                              <Edit2 size={16} />
+                              Editar
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (confirm('Remover este template permanentemente?')) {
+                                  deleteTemplate(template.id);
+                                  setOpenMenuId(null);
+                                }
+                              }}
+                              className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-destructive hover:bg-destructive/10 transition-all border-t border-gray-800"
+                            >
+                              <Trash2 size={16} />
+                              Excluir
+                            </button>
+                          </motion.div>
+                        </>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
 
                 <div className="relative z-10">
@@ -136,7 +196,10 @@ const TemplatesPage: React.FC<{ onNavigate: (v: PageView) => void }> = ({ onNavi
 
         {!isLoading && filteredTemplates.length === 0 && (
           <div
-            onClick={() => setIsAddModalOpen(true)}
+            onClick={() => {
+              setEditingTemplate(null);
+              setIsAddModalOpen(true);
+            }}
             className="col-span-full bg-card/20 border-2 border-dashed border-white/5 rounded-[32px] p-20 flex flex-col items-center justify-center text-center space-y-6 hover:border-accent/40 hover:bg-accent/5 transition-all cursor-pointer group"
           >
             <div className="p-6 bg-white/5 rounded-3xl text-secondary group-hover:text-accent group-hover:scale-110 transition-all">
@@ -152,8 +215,12 @@ const TemplatesPage: React.FC<{ onNavigate: (v: PageView) => void }> = ({ onNavi
 
       {isAddModalOpen && (
         <AddTemplateModal
-          onClose={() => setIsAddModalOpen(false)}
-          onSave={handleAddTemplate}
+          initialData={editingTemplate}
+          onClose={() => {
+            setIsAddModalOpen(false);
+            setEditingTemplate(null);
+          }}
+          onSave={handleSaveTemplate}
         />
       )}
     </motion.div>

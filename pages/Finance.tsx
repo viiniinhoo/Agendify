@@ -79,26 +79,32 @@ const FinancePage: React.FC<{ onNavigate: (v: PageView) => void; events: Event[]
           <h3 className="text-xl font-bold">Pagamentos por Evento</h3>
           <div className="space-y-4 max-h-[400px] overflow-y-auto no-scrollbar">
             {/* Use events from props instead of mockEvents */}
-            {events.map(event => (
-              <div key={event.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-gray-800/50">
-                <div className="flex items-center gap-4">
-                  <div className={`p-2 rounded-lg ${event.paid_amount >= event.total_amount ? 'bg-accent/10 text-accent' : 'bg-warning/10 text-warning'}`}>
-                    <CreditCard size={20} />
+            {[...events]
+              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+              .map(event => (
+                <div
+                  key={event.id}
+                  onClick={() => onNavigate('event-detail', event.id)}
+                  className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-gray-800/50 cursor-pointer hover:bg-white/10 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`p-2 rounded-lg ${event.paid_amount >= event.total_amount ? 'bg-accent/10 text-accent' : 'bg-warning/10 text-warning'}`}>
+                      <CreditCard size={20} />
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm truncate max-w-[140px]">{event.title}</p>
+                      <p className="text-[10px] text-secondary font-bold truncate opacity-60 mb-1">{event.client_name}</p>
+                      <p className="text-[10px] text-secondary uppercase font-bold tracking-wider">
+                        {event.paid_amount >= event.total_amount ? 'Quitado' : 'Parcial'}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-bold text-sm truncate max-w-[140px]">{event.title}</p>
-                    <p className="text-[10px] text-secondary font-bold truncate opacity-60 mb-1">{event.client_name}</p>
-                    <p className="text-[10px] text-secondary uppercase font-bold tracking-wider">
-                      {event.paid_amount >= event.total_amount ? 'Quitado' : 'Parcial'}
-                    </p>
+                  <div className="text-right">
+                    <p className="font-bold">R$ {event.paid_amount.toLocaleString('pt-BR')}</p>
+                    <p className="text-[10px] text-secondary font-bold">de R$ {event.total_amount.toLocaleString('pt-BR')}</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold">R$ {event.paid_amount.toLocaleString('pt-BR')}</p>
-                  <p className="text-[10px] text-secondary font-bold">de R$ {event.total_amount.toLocaleString('pt-BR')}</p>
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       </div>

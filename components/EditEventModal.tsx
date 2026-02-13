@@ -4,6 +4,7 @@ import { X, Calendar, MapPin, Clock, DollarSign, Briefcase, User, Phone, CheckCi
 import { Event, EventStatus } from '../types';
 import CustomDatePicker from './CustomDatePicker';
 import CustomTimePicker from './CustomTimePicker';
+import CustomStatusSelect from './CustomStatusSelect';
 import { AnimatePresence } from 'framer-motion';
 
 interface EditEventModalProps {
@@ -169,16 +170,10 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, onClose, onSave 
                     {/* Status */}
                     <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase text-secondary tracking-widest px-1">Status do Evento</label>
-                        <select
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-accent/50 appearance-none text-sm font-bold"
+                        <CustomStatusSelect
                             value={formData.status}
-                            onChange={e => setFormData({ ...formData, status: e.target.value as EventStatus })}
-                        >
-                            <option value={EventStatus.ORCADO}>Orçado</option>
-                            <option value={EventStatus.CONFIRMADO}>Confirmado</option>
-                            <option value={EventStatus.CONCLUIDO}>Concluído</option>
-                            <option value={EventStatus.CANCELADO}>Cancelado</option>
-                        </select>
+                            onChange={(status) => setFormData({ ...formData, status })}
+                        />
                     </div>
 
                     <button
@@ -196,6 +191,12 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, onClose, onSave 
                             value={formData.date}
                             onChange={(date) => setFormData({ ...formData, date })}
                             onClose={() => setShowDatePicker(false)}
+                            statusColor={
+                                formData.status === EventStatus.ORCADO ? 'text-warning' :
+                                    formData.status === EventStatus.CANCELADO ? 'text-destructive' :
+                                        formData.status === EventStatus.CONCLUIDO ? 'text-blue-500' :
+                                            'text-accent'
+                            }
                         />
                     )}
                     {showTimePicker && (
