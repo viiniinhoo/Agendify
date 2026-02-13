@@ -1,0 +1,8 @@
+{
+  "name": "Agendify",
+  "description": "Sistema de gestão completo para freelancers de eventos, com controle de agenda, clientes, checklists e financeiro.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

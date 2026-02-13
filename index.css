@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #0a0a0a;
+  --color-card: #141414;
+  --color-accent: #00ff88;
+  --color-accent-dark: #00cc6d;
+  --color-secondary: #888888;
+  --color-warning: #ffaa00;
+  --color-destructive: #ff4444;
+
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
+  --radius-4xl: 32px;
+
+  --font-inter: "Inter", sans-serif;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-inter);
+    background-color: var(--color-background);
+    @apply text-white antialiased selection:bg-accent/30;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer utilities {
+  .neon-glow {
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5), 0 0 20px rgba(0, 255, 136, 0.3);
+  }
+
+  .neon-border {
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.1);
+    @apply border-accent/20;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .glass-card {
+    @apply bg-card/60 backdrop-blur-xl border border-white/5;
+  }
+
+  /* Otimização para Mobile Inputs */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    background: transparent;
+    bottom: 0;
+    color: transparent;
+    cursor: pointer;
+    height: auto;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: auto;
+  }
+
+  input[type="date"],
+  input[type="time"] {
+    position: relative;
+  }
+
+  /* Ajuste de escala para evitar zoom no iOS */
+  @media (max-width: 640px) {
+
+    input,
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
+
+  /* Custom Scrollbar para Desktop */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    transition: background 0.3s;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 255, 136, 0.2);
+  }
+
+  /* Máscara de desvanecimento para listas roláveis */
+  .mask-fade-y {
+    mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+  }
+}
