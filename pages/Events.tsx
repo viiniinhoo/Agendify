@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { PageView, Event, EventStatus } from '../types';
-import { Plus, Search, Calendar, MapPin, Clock, ExternalLink, Briefcase } from 'lucide-react';
+import { Plus, Search, Calendar, MapPin, Clock, ExternalLink, Briefcase, Filter } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { formatDateFull } from '../utils/dateUtils';
+import { formatDateFull, getDayAndMonth } from '../utils/dateUtils';
 
 interface EventsPageProps {
   onNavigate: (view: PageView, id?: string) => void;
@@ -14,155 +14,209 @@ interface EventsPageProps {
 const EventsPage: React.FC<EventsPageProps> = ({ onNavigate, events, onAddEvent }) => {
   const [filter, setFilter] = useState<string>('todos');
   const [search, setSearch] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
 
-  const filteredEvents = events.filter(e => {
-    const matchesSearch = e.title.toLowerCase().includes(search.toLowerCase()) ||
-      e.location?.toLowerCase().includes(search.toLowerCase());
-    const matchesFilter = filter === 'todos' || e.status === filter;
-    return matchesSearch && matchesFilter;
-  });
+  // Grouping logic
+  const groupedEvents = useMemo(() => {
+    const sorted = [...events].sort((a, b) => a.date.localeCompare(b.date));
+
+    const filtered = sorted.filter(e => {
+      const matchesSearch = e.title.toLowerCase().includes(search.toLowerCase()) ||
+        e.location?.toLowerCase().includes(search.toLowerCase()) ||
+        e.client_name?.toLowerCase().includes(search.toLowerCase());
+      const matchesFilter = filter === 'todos' || e.status === filter;
+      return matchesSearch && matchesFilter;
+    });
+
+    const groups: { [key: string]: Event[] } = {};
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Get start and end of current week
+    const firstDayOfWeek = new Date(today);
+    firstDayOfWeek.setDate(today.getDate() - today.getDay());
+    const lastDayOfWeek = new Date(firstDayOfWeek);
+    lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
+
+    filtered.forEach(event => {
+      const eventDate = new Date(event.date + 'T12:00:00');
+      let groupName = '';
+
+      if (eventDate >= firstDayOfWeek && eventDate <= lastDayOfWeek) {
+        groupName = 'ESTA SEMANA';
+      } else {
+        groupName = eventDate.toLocaleDateString('pt-BR', { month: 'long' }).toUpperCase();
+      }
+
+      if (!groups[groupName]) groups[groupName] = [];
+      groups[groupName].push(event);
+    });
+
+    return groups;
+  }, [events, search, filter]);
 
   const statuses = [
     { id: 'todos', label: 'Todos' },
-    { id: EventStatus.ORCADO, label: 'Orçados' },
+    { id: EventStatus.ORCADO, label: 'Pendentes' },
     { id: EventStatus.CONFIRMADO, label: 'Confirmados' },
-    { id: EventStatus.CONCLUIDO, label: 'Concluídos' },
+    { id: EventStatus.CONCLUIDO, label: 'Finalizados' },
     { id: EventStatus.CANCELADO, label: 'Cancelados' },
   ];
+
+  const getStatusColor = (status: EventStatus) => {
+    switch (status) {
+      case EventStatus.CONFIRMADO: return 'bg-accent';
+      case EventStatus.ORCADO: return 'bg-warning';
+      case EventStatus.CONCLUIDO: return 'bg-secondary';
+      case EventStatus.CANCELADO: return 'bg-destructive';
+      default: return 'bg-secondary';
+    }
+  };
+
+  const getStatusLabel = (status: EventStatus) => {
+    switch (status) {
+      case EventStatus.ORCADO: return 'PENDENTE';
+      case EventStatus.CONFIRMADO: return 'CONFIRMADO';
+      case EventStatus.CONCLUIDO: return 'FINALIZADO';
+      case EventStatus.CANCELADO: return 'CANCELADO';
+      default: return (status as string).toUpperCase();
+    }
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="container mx-auto px-4 lg:px-8 py-8 space-y-8 max-w-5xl"
+      className="container mx-auto px-4 py-4 space-y-4 max-w-2xl min-h-screen pb-24"
     >
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      {/* Header compact for mobile */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black tracking-tightest">Meus <span className="text-accent underline decoration-accent/20 underline-offset-8">Eventos</span></h1>
-          <p className="text-secondary text-sm mt-2 font-medium">Acompanhe e gerencie seus compromissos.</p>
+          <h1 className="text-2xl font-black tracking-tighter">Meus <span className="text-accent inline-block">Eventos</span></h1>
         </div>
         <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          whileTap={{ scale: 0.95 }}
           onClick={onAddEvent}
-          className="bg-accent text-black font-black px-6 py-4 rounded-2xl flex items-center justify-center gap-2 w-full md:w-auto transition-all shadow-xl"
+          className="bg-accent text-black p-3 rounded-2xl shadow-lg shadow-accent/20"
         >
-          <Plus size={20} strokeWidth={3} />
-          <span className="uppercase text-xs tracking-widest">Novo Evento</span>
+          <Plus size={24} strokeWidth={3} />
         </motion.button>
       </div>
 
-      <div className="space-y-4">
-        <div className="relative group">
-          <label htmlFor="event-search" className="sr-only">Buscar eventos</label>
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-secondary group-focus-within:text-accent transition-colors" size={20} />
+      {/* Modern Search Bar */}
+      <div className="flex gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/50" size={18} />
           <input
-            id="event-search"
             type="text"
-            placeholder="Buscar por título ou local..."
+            placeholder="Buscar cliente, tipo ou local..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-card/40 border border-white/5 rounded-2xl pl-14 pr-4 py-4 focus:outline-none focus:border-accent/40 focus:ring-4 focus:ring-accent/5 transition-all shadow-xl font-medium"
+            className="w-full bg-[#121212] border border-white/5 rounded-2xl pl-12 pr-4 py-4 text-sm focus:outline-none focus:border-accent/30 focus:ring-1 focus:ring-accent/10 transition-all font-medium placeholder:text-secondary/40"
           />
         </div>
-
-        <div className="bg-card/40 border border-white/5 rounded-2xl p-1.5 shadow-xl">
-          <div className="grid grid-cols-3 gap-1.5">
-            {statuses.slice(0, 3).map(s => (
-              <button
-                key={s.id}
-                onClick={() => setFilter(s.id)}
-                className={`relative px-4 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${filter === s.id
-                  ? 'bg-accent text-black shadow-lg shadow-accent/20'
-                  : 'text-secondary hover:text-white'
-                  }`}
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
-          <div className="grid grid-cols-2 gap-1.5 mt-1.5">
-            {statuses.slice(3).map(s => (
-              <button
-                key={s.id}
-                onClick={() => setFilter(s.id)}
-                className={`relative px-4 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${filter === s.id
-                  ? 'bg-accent text-black shadow-lg shadow-accent/20'
-                  : 'text-secondary hover:text-white'
-                  }`}
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className={`px-4 rounded-2xl border transition-all ${showFilters ? 'bg-accent/10 border-accent/30 text-accent' : 'bg-[#121212] border-white/5 text-secondary'}`}
+        >
+          <Filter size={18} />
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <AnimatePresence mode="popLayout">
-          {filteredEvents.map((event, idx) => (
-            <motion.div
-              layout
-              key={event.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ delay: idx * 0.05 }}
-              onClick={() => onNavigate('event-detail', event.id)}
-              className="bg-card/40 backdrop-blur-xl rounded-[24px] border border-white/5 p-6 space-y-5 hover:border-accent/30 transition-all cursor-pointer group shadow-2xl relative overflow-hidden"
-            >
-              <div className="flex justify-between items-start relative z-10">
-                <span className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest ${event.status === EventStatus.CONFIRMADO ? 'bg-accent/10 text-accent border border-accent/20' :
-                  event.status === EventStatus.ORCADO ? 'bg-warning/10 text-warning border border-warning/20' :
-                    'bg-blue-400/10 text-blue-400 border border-blue-400/20'
-                  }`}>
-                  {event.status === EventStatus.ORCADO ? 'ORÇADO' : event.status}
-                </span>
-                <p className="text-accent font-black text-lg">R$ {event.total_amount.toLocaleString('pt-BR')}</p>
-              </div>
+      {/* Collapsible Filters */}
+      <AnimatePresence>
+        {showFilters && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="flex flex-wrap gap-2 pt-2">
+              {statuses.map(s => (
+                <button
+                  key={s.id}
+                  onClick={() => setFilter(s.id)}
+                  className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border ${filter === s.id
+                    ? 'bg-accent/10 border-accent/40 text-accent'
+                    : 'bg-card/40 border-white/5 text-secondary hover:text-white'
+                    }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-              <div className="relative z-10">
-                <h3 className="text-xl font-black group-hover:text-accent transition-colors tracking-tight line-clamp-1">{event.title}</h3>
-                <p className="text-secondary text-xs uppercase tracking-widest mt-1 font-bold opacity-60">{event.type}</p>
-              </div>
+      {/* Events Groups */}
+      <div className="space-y-6 pt-1">
+        {(Object.entries(groupedEvents) as [string, Event[]][]).map(([groupName, groupEvents]) => (
+          <div key={groupName} className="space-y-2">
+            <h2 className="text-[10px] font-black tracking-[0.2em] text-accent uppercase opacity-90 px-1">
+              {groupName}
+            </h2>
 
-              <div className="space-y-3 pt-5 border-t border-white/5 relative z-10">
-                <div className="flex items-center gap-3 text-secondary text-sm font-medium">
-                  <div className="bg-accent/10 p-2 rounded-lg text-accent">
-                    <Calendar size={14} />
-                  </div>
-                  <span>{formatDateFull(event.date)}</span>
-                </div>
-                <div className="flex items-center gap-3 text-secondary text-sm font-medium">
-                  <div className="bg-accent/10 p-2 rounded-lg text-accent">
-                    <Clock size={14} />
-                  </div>
-                  <span>{event.start_time}</span>
-                </div>
-                {event.location && (
-                  <div className="flex items-center gap-3 text-secondary text-sm font-medium">
-                    <div className="bg-accent/10 p-2 rounded-lg text-accent">
-                      <MapPin size={14} />
+            <div className="space-y-3">
+              {groupEvents.map((event) => {
+                const { day, month } = getDayAndMonth(event.date);
+                return (
+                  <motion.div
+                    key={event.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => onNavigate('event-detail', event.id)}
+                    className="bg-[#181818] rounded-3xl overflow-hidden shadow-xl border border-white/5 relative flex group"
+                  >
+                    {/* Left Border Status Indicator */}
+                    <div className={`w-1 h-full absolute left-0 top-0 ${getStatusColor(event.status)} shadow-[4px_0_15px_-4px_rgba(0,0,0,0.5)]`} />
+
+                    <div className="flex w-full p-3 pl-5 items-center gap-4">
+                      {/* Date Block */}
+                      <div className="flex flex-col items-center justify-center bg-[#1c1c1c] rounded-xl px-3 py-2 min-w-[64px] border border-white/5">
+                        <span className="text-[9px] font-black text-secondary uppercase tracking-widest leading-none mb-1">{month}</span>
+                        <span className="text-xl font-black text-white leading-none mb-1">{day}</span>
+                        <span className="text-[9px] font-bold text-secondary/60 leading-none">{event.start_time}</span>
+                      </div>
+
+                      {/* Info Block */}
+                      <div className="flex-1 min-w-0 pr-1">
+                        <div className="flex items-start justify-between mb-0.5 gap-2">
+                          <h3 className="text-sm font-bold text-white tracking-tight truncate leading-tight">
+                            {event.title}
+                          </h3>
+                          <span className={`${getStatusColor(event.status)}/10 ${getStatusColor(event.status).replace('bg-', 'text-')} text-[8px] font-black px-1.5 py-0.5 rounded-md border ${getStatusColor(event.status).replace('bg-', 'border-')}/20 whitespace-nowrap`}>
+                            {getStatusLabel(event.status)}
+                          </span>
+                        </div>
+
+                        <p className="text-secondary text-xs font-medium truncate mb-1 opacity-80">
+                          {event.client_name || 'Sem cliente'}
+                        </p>
+
+                        <div className="flex items-center justify-between mt-auto">
+                          <div className="flex items-center gap-1.5 text-secondary/60 text-xs truncate mr-4">
+                            <MapPin size={12} className="shrink-0" />
+                            <span className="truncate">{event.location || 'Local não definido'}</span>
+                          </div>
+                          <span className="text-sm font-bold text-white shrink-0">
+                            R$ {event.total_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <span className="truncate">{event.location}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="pt-2 flex justify-end relative z-10">
-                <div className="text-secondary group-hover:text-accent flex items-center gap-2 text-[10px] font-black uppercase tracking-widest opacity-60 group-hover:opacity-100 transition-all">
-                  Ver Detalhes
-                  <ExternalLink size={14} />
-                </div>
-              </div>
-
-              <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 blur-[50px] -mr-16 -mt-16 group-hover:bg-accent/10 transition-all rounded-full" />
-            </motion.div>
-          ))}
-        </AnimatePresence>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
 
-      {filteredEvents.length === 0 && (
+      {Object.keys(groupedEvents).length === 0 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -172,8 +226,8 @@ const EventsPage: React.FC<EventsPageProps> = ({ onNavigate, events, onAddEvent 
             <Briefcase size={40} strokeWidth={1} />
           </div>
           <div className="space-y-1">
-            <p className="text-white font-black text-xl tracking-tight">Nenhum evento encontrado.</p>
-            <p className="text-secondary text-sm font-medium">Tente ajustar seus filtros ou busca.</p>
+            <p className="text-white font-black text-xl tracking-tight">Nenhum evento aqui.</p>
+            <p className="text-secondary text-sm font-medium">Tente buscar por outro termo.</p>
           </div>
         </motion.div>
       )}
