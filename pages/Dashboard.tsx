@@ -54,14 +54,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, events, onAddEvent })
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="container mx-auto px-4 lg:px-8 py-6 space-y-8"
+      className="container mx-auto px-4 py-4 space-y-6 max-w-2xl min-h-screen pb-24"
     >
-      <div className="flex flex-row items-center justify-between gap-4">
+      <div className="flex items-center justify-between">
         <div>
-          <motion.h1 variants={itemVariants} className="text-3xl md:text-5xl font-black tracking-tightest">
-            Agend<span className="text-accent underline decoration-accent/30 underline-offset-8">ify</span>
+          <motion.h1 variants={itemVariants} className="text-2xl font-black tracking-tighter">
+            Agend<span className="text-accent">ify</span>
           </motion.h1>
-          <motion.p variants={itemVariants} className="hidden sm:block text-secondary text-sm font-medium mt-3">Sua central de comando freelancer.</motion.p>
         </div>
         <motion.button
           variants={itemVariants}
@@ -75,7 +74,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, events, onAddEvent })
         </motion.button>
       </div>
 
-      <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+      <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {[
           { label: 'Eventos', val: events.length, icon: Briefcase, color: 'text-accent', bg: 'bg-accent/10' },
           { label: 'Contatos', val: new Set(events.map(e => e.client_name)).size, icon: Users, color: 'text-[#00e1ff]', bg: 'bg-[#00e1ff]/10' },
@@ -99,60 +98,84 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, events, onAddEvent })
       </motion.div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-        <motion.div variants={itemVariants} className="xl:col-span-8 space-y-4">
-          <div className="flex items-center justify-between px-2">
-            <h2 className="text-xl font-black tracking-tight">Próximos Compromissos</h2>
-            <button onClick={() => onNavigate('events')} className="text-accent text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all">Ver Agenda</button>
+        <motion.div variants={itemVariants} className="xl:col-span-12 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-black tracking-tight">Próximos Eventos</h2>
+            <button onClick={() => onNavigate('events')} className="text-accent text-[11px] font-bold hover:brightness-110 transition-all">Ver todos</button>
           </div>
 
-          <div className="bg-card rounded-[32px] border border-gray-800/50 divide-y divide-gray-800/30 overflow-hidden shadow-2xl">
-            {nextEvents.map((event, idx) => (
-              <motion.div
-                key={event.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + (idx * 0.1) }}
-                onClick={() => onNavigate('event-detail', event.id)}
-                className="p-5 hover:bg-white/[0.02] transition-all cursor-pointer group flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-              >
-                <div className="flex items-center gap-5 min-w-0 flex-1">
-                  <div className="w-12 h-12 rounded-2xl bg-white/5 border border-gray-800/50 flex flex-col items-center justify-center shrink-0 group-hover:border-accent/30 transition-colors">
-                    <span className="text-[10px] font-black text-secondary uppercase leading-none mb-1">
-                      {getDayAndMonth(event.date).month}
-                    </span>
-                    <span className="text-xl font-black leading-none">{getDayAndMonth(event.date).day}</span>
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="font-bold text-base group-hover:text-accent transition-colors truncate mb-1">{event.title}</h3>
-                    <div className="flex items-center gap-4 text-secondary text-xs font-medium">
-                      <span className="flex items-center gap-1.5 shrink-0"><Clock size={14} className="text-accent/50" /> {event.start_time}</span>
-                      <span className="flex items-center gap-1.5 truncate"><MapPin size={14} className="text-accent/50" /> {event.location}</span>
+          <div className="flex gap-4 overflow-x-auto pb-4 pt-2 hide-scrollbar snap-x">
+            {nextEvents.map((event, idx) => {
+              const { day, month } = getDayAndMonth(event.date);
+              const statusColor = event.status === EventStatus.CONFIRMADO ? '#00ff88' :
+                event.status === EventStatus.ORCADO ? '#ffaa00' :
+                  event.status === EventStatus.CONCLUIDO ? '#888888' : '#ff4444';
+
+              return (
+                <motion.div
+                  key={event.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2 + (idx * 0.1) }}
+                  onClick={() => onNavigate('event-detail', event.id)}
+                  className="min-w-[85%] sm:min-w-[320px] bg-[#181818] rounded-[20px] border border-white/5 p-3.5 shadow-2xl cursor-pointer relative snap-start group"
+                >
+                  {/* Status Indicator Bar */}
+                  <div
+                    className="absolute left-0 top-4 bottom-4 w-1 rounded-r-full shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+                    style={{ backgroundColor: statusColor }}
+                  />
+
+                  <div className="flex justify-between items-center mb-3 pl-3">
+                    {/* Date Block */}
+                    <div className="bg-[#1c1c1c] rounded-xl px-2.5 py-1.5 min-w-[50px] flex flex-col items-center justify-center border border-white/5">
+                      <span className="text-lg font-black text-white leading-none mb-0.5">{day}</span>
+                      <span className="text-[9px] font-black text-secondary uppercase tracking-widest">{month}</span>
+                    </div>
+
+                    {/* Status Badge */}
+                    <div className="flex items-center gap-1.5 bg-white/[0.03] border border-white/5 px-2.5 py-1 rounded-full">
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: statusColor }} />
+                      <span className="text-[9px] font-black text-secondary uppercase tracking-widest">
+                        {event.status === EventStatus.ORCADO ? 'Pendente' :
+                          event.status === EventStatus.CONFIRMADO ? 'Confirmado' :
+                            event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                      </span>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-6 shrink-0">
-                  <div className="text-right">
-                    <p className="text-base font-black text-white">R$ {event.total_amount.toLocaleString('pt-BR')}</p>
-                    <p className="text-[10px] text-secondary font-bold uppercase tracking-wider">Total</p>
+                  <div className="pl-3">
+                    <h3 className="text-base font-bold text-white group-hover:text-accent transition-colors leading-tight mb-2.5 truncate">
+                      {event.title}
+                    </h3>
+
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-1 text-secondary font-medium text-[10px]">
+                        <Clock size={12} className="opacity-40" />
+                        <span>{event.start_time}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-secondary font-medium text-[10px] truncate">
+                        <MapPin size={12} className="opacity-40" />
+                        <span className="truncate">{event.location || 'Local...'}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border shrink-0 ${event.status === EventStatus.CONFIRMADO ? 'bg-accent/10 text-accent border-accent/20' : 'bg-warning/10 text-warning border-warning/20'
-                    }`}>
-                    {event.status === EventStatus.ORCADO ? 'ORÇADO' : event.status}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
             {nextEvents.length === 0 && (
-              <div className="p-12 text-center text-secondary text-sm font-medium">Nenhum evento futuro agendado.</div>
+              <div className="w-full py-12 bg-card/40 rounded-[32px] border border-white/5 flex flex-col items-center justify-center text-secondary">
+                <Calendar size={40} strokeWidth={1} className="mb-4 opacity-20" />
+                <p className="font-medium">Nenhum evento agendado</p>
+              </div>
             )}
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="xl:col-span-4 space-y-6">
-          <div className="bg-card p-8 rounded-[32px] border border-gray-800/50 shadow-2xl relative overflow-hidden group">
+        <motion.div variants={itemVariants} className="xl:col-span-4 space-y-4">
+          <div className="bg-card p-6 rounded-[32px] border border-gray-800/50 shadow-2xl relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 blur-[60px] rounded-full -mr-16 -mt-16 transition-all group-hover:bg-accent/10" />
-            <h2 className="text-xl font-black tracking-tight mb-8">Saúde Financeira</h2>
+            <h2 className="text-xl font-black tracking-tight mb-6">Saúde Financeira</h2>
             <div className="h-[180px] w-full mb-8">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} layout="vertical">
